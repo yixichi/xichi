@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物世界 - 探索自然奇迹</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .animal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .animal-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .animal-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+        }
+
+        .animal-info {
+            padding: 1.5rem;
+        }
+
+        .animal-info h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .animal-details {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .detail-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 10px;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            background-color: #f8f9fa;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .animal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌍 动物世界</h1>
+        <p>探索地球上最神奇的生物</p>
+    </header>
+
+    <div class="container">
+        <div class="animal-grid" id="animalGrid">
+            <!-- 动物卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <div id="animalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" class="modal-image" src="" alt="">
+            <h2 id="modalTitle"></h2>
+            <div id="modalDescription"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 动物世界 | 保护野生动物，关爱自然家园</p>
+    </footer>
+
+    <script>
+        // 动物数据
+        const animals = [
+            {
+                name: '大熊猫',
+                image: '大熊猫.jpg',
+                shortDesc: '中国的国宝，世界上最可爱的黑白熊',
+                details: {
+                    '学名': 'Ailuropoda melanoleuca',
+                    '分类': '食肉目熊科',
+                    '分布': '中国四川、陕西、甘肃等地',
+                    '体型': '体长1.2-1.8米，体重80-120公斤',
+                    '食物': '主要以竹子为食（占99%）',
+                    '保护级别': '易危(VU)',
+                    '特点': '黑白相间的毛色，圆脸黑眼圈，憨态可掬'
+                },
+                description: `
+                    <p><strong>大熊猫</strong>是世界上最珍贵的动物之一，也是中国的国宝。它们以其独特的黑白相间的外观和温和的性格而闻名于世。</p>
+                    
+                    <h3>生活习性</h3>
+                    <p>大熊猫主要生活在海拔2600-3500米的茂密竹林中。它们是独居动物，每只成年大熊猫都有自己的领地。虽然属于食肉动物，但大熊猫的食物99%都是竹子。</p>
+                    
+                    <h3>繁殖特点</h3>
+                    <p>大熊猫的繁殖率很低，雌性每年只有2-3天的发情期。新生幼崽非常小，只有母亲体重的千分之一，是所有胎盘哺乳动物中母子体重差距最大的。</p>
+                    
+                    <h3>保护现状</h3>
+                    <p>经过多年保护，大熊猫的野外种群数量已超过1800只，从"濒危"降级为"易危"，但仍然是重点保护物种。</p>
+                `
+            },
+            {
+                name: '北极熊',
+                image: '北极熊.jpg',
+                shortDesc: '北极之王，世界上最大的陆地食肉动物',
+                details: {
+                    '学名': 'Ursus maritimus',
+                    '分类': '食肉目熊科',
+                    '分布': '北极圈及其周边地区',
+                    '体型': '体长2-3米，体重300-700公斤',
+                    '食物': '主要以海豹为食',
+                    '保护级别': '易危(VU)',
+                    '特点': '白色毛发，黑色皮肤，擅长游泳'
+                },
+                description: `
+                    <p><strong>北极熊</strong>是世界上最大的陆地食肉动物，也是北极地区的象征。它们拥有厚厚的脂肪层和防水的毛发，能够在极寒的环境中生存。</p>
+                    
+                    <h3>适应能力</h3>
+                    <p>北极熊的皮肤实际上是黑色的，可以吸收更多热量；透明的毛发看起来是白色的，既能伪装又能保温。它们的爪子宽大如桨，是优秀的游泳健将。</p>
+                    
+                    <h3>捕猎技巧</h3>
+                    <p>北极熊主要在海冰上捕猎海豹。它们会守候在海豹的呼吸孔旁，等待猎物出现。北极熊的嗅觉极其灵敏，能闻到几公里外的海豹气味。</p>
+                    
+                    <h3>环境威胁</h3>
+                    <p>全球变暖导致海冰融化，严重威胁北极熊的生存环境。科学家预测，如果不采取行动，到2100年北极熊可能会灭绝。</p>
+                `
+            },
+            {
+                name: '中华穿山甲',
+                image: '中华穿山甲.jpg',
+                shortDesc: '身披铠甲的森林卫士',
+                details: {
+                    '学名': 'Manis pentadactyla',
+                    '分类': '鳞甲目穿山甲科',
+                    '分布': '中国南方及东南亚地区',
+                    '体型': '体长50-92厘米，体重3-7公斤',
+                    '食物': '主要以白蚁和蚂蚁为食',
+                    '保护级别': '极危(CR)',
+                    '特点': '全身覆盖角质鳞片，遇险时卷成球状'
+                },
+                description: `
+                    <p><strong>中华穿山甲</strong>是中国特有的穿山甲种类，因其独特的鳞片覆盖而得名。它们是世界上最受非法贸易威胁的哺乳动物之一。</p>
+                    
+                    <h3>独特防御</h3>
+                    <p>穿山甲全身覆盖着坚硬的角质鳞片，当遇到危险时会迅速卷成一个紧密的球，连狮子老虎都无从下口。这些鳞片由角蛋白构成，与人类指甲成分相同。</p>
+                    
+                    <h3>生态价值</h3>
+                    <p>一只穿山甲一年可以吃掉数百万只白蚁和蚂蚁，对保护森林生态系统起着重要作用。它们是名副其实的"森林卫士"。</p>
+                    
+                    <h3>保护危机</h3>
+                    <p>由于非法捕猎和栖息地丧失，中华穿山甲的野外种群已濒临灭绝。2020年，中国将穿山甲升级为国家一级保护野生动物。</p>
+                `
+            },
+            {
+                name: '朱鹮',
+                image: '朱鹤.jpg',
+                shortDesc: '东方宝石，世界上最珍稀的鸟类之一',
+                details: {
+                    '学名': 'Nipponia nippon',
+                    '分类': '鹳形目鹮科',
+                    '分布': '中国陕西洋县等地',
+                    '体型': '体长55-80厘米，翼展1.4米',
+                    '食物': '小鱼、蛙类、昆虫等',
+                    '保护级别': '濒危(EN)',
+                    '特点': '白色羽毛带粉红色，面部红色，姿态优雅'
+                },
+                description: `
+                    <p><strong>朱鹮</strong>被誉为"东方宝石"，是世界上最珍稀的鸟类之一。它们曾经广泛分布于东亚地区，但因环境破坏而濒临灭绝。</p>
+                    
+                    <h3>发现奇迹</h3>
+                    <p>1981年，科学家在陕西洋县发现了全球仅存的7只野生朱鹮，创造了生物学界的奇迹。经过40多年的保护，种群数量已恢复到7000余只。</p>
+                    
+                    <h3>外貌特征</h3>
+                    <p>朱鹮通体白色，翅膀和尾部带有美丽的粉红色，面部裸露呈鲜红色。它们姿态优雅，飞行时双翅展开可达1.4米，宛如空中仙子。</p>
+                    
+                    <h3>保护故事</h3>
+                    <p>朱鹮的保护被誉为世界野生动物保护的典范。中国建立了多个自然保护区，实施人工繁育和野化放归，使这一珍稀物种重获生机。</p>
+                `
+            },
+            {
+                name: '绿海龟',
+                image: '绿海龟.jpg',
+                shortDesc: '海洋中的活化石，亿万年历史的见证者',
+                details: {
+                    '学名': 'Chelonia mydas',
+                    '分类': '龟鳖目海龟科',
+                    '分布': '热带和亚热带海域',
+                    '体型': '体长80-150厘米，体重65-130公斤',
+                    '食物': '主要以海草和藻类为食',
+                    '保护级别': '濒危(EN)',
+                    '特点': '背甲呈心形，绿色脂肪组织，长寿'
+                },
+                description: `
+                    <p><strong>绿海龟</strong>是海龟科中体型较大的一种，因体内脂肪呈绿色而得名。它们在地球上已经生存了超过1亿年，是真正的"活化石"。</p>
+                    
+                    <h3>洄游习性</h3>
+                    <p>绿海龟具有惊人的导航能力，每年都会洄游数千公里，回到自己出生的海滩产卵。它们利用地球磁场来辨别方向。</p>
+                    
+                    <h3>生态作用</h3>
+                    <p>作为主要的草食性海龟，绿海龟通过啃食海草维持海草床的健康，为其他海洋生物提供栖息地，对海洋生态系统至关重要。</p>
+                    
+                    <h3>生存威胁</h3>
+                    <p>塑料污染、非法捕捞、栖息地破坏和气候变化严重威胁绿海龟的生存。全球范围内的保护措施正在积极开展中。</p>
+                `
+            },
+            {
+                name: '网纹长颈鹿',
+                image: '网纹长颈鹿.jpg',
+                shortDesc: '草原上的优雅巨人，最高的陆生动物',
+                details: {
+                    '学名': 'Giraffa reticulata',
+                    '分类': '偶蹄目长颈鹿科',
+                    '分布': '东非索马里、埃塞俄比亚等地',
+                    '体型': '身高4.5-5.5米，体重800-1200公斤',
+                    '食物': '主要以金合欢树叶为食',
+                    '保护级别': '濒危(EN)',
+                    '特点': '网状斑纹，超长颈部，紫色舌头'
+                },
+                description: `
+                    <p><strong>网纹长颈鹿</strong>是长颈鹿的一个亚种，以其清晰的网状斑纹而得名。它们是地球上最高的陆生动物，能够轻松吃到高处的树叶。</p>
+                    
+                    <h3>身体构造</h3>
+                    <p>长颈鹿的颈部虽然很长，但只有7块颈椎骨（与人类相同），只是每块都特别长。它们的心脏重达11公斤，血压是人类的2倍，才能将血液输送到头部。</p>
+                    
+                    <h3>独特斑纹</h3>
+                    <p>网纹长颈鹿的斑纹如同人类的指纹，每只都是独一无二的。这些斑纹有助于体温调节，还能在群体中进行识别。</p>
+                    
+                    <h3>社会行为</h3>
+                    <p>长颈鹿是群居动物，通常组成松散的群体。它们之间的交流方式很特殊，会通过"脖击"（用脖子互相撞击）来争夺配偶或确立地位。</p>
+                `
+            }
+        ];
+
+        // 渲染动物卡片
+        function renderAnimalCards() {
+            const grid = document.getElementById('animalGrid');
+            animals.forEach((animal, index) => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.innerHTML = `
+                    <img src="${animal.image}" alt="${animal.name}">
+                    <div class="animal-info">
+                        <h2>${animal.name}</h2>
+                        <div class="animal-details">
+                            <p style="margin-bottom: 1rem; color: #333;">${animal.shortDesc}</p>
+                            ${Object.entries(animal.details).slice(0, 3).map(([key, value]) => `
+                                <div class="detail-item">
+                                    <span class="detail-label">${key}：</span>${value}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openModal(index));
+                grid.appendChild(card);
+            });
+        }
+
+        // 打开模态框
+        function openModal(index) {
+            const animal = animals[index];
+            const modal = document.getElementById('animalModal');
+            document.getElementById('modalImage').src = animal.image;
+            document.getElementById('modalImage').alt = animal.name;
+            document.getElementById('modalTitle').textContent = animal.name;
+            document.getElementById('modalDescription').innerHTML = animal.description + `
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                    <h3 style="margin-bottom: 1rem; color: #667eea;">详细信息</h3>
+                    ${Object.entries(animal.details).map(([key, value]) => `
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong style="color: #333;">${key}：</strong>
+                            <span style="color: #666;">${value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭模态框
+        document.querySelector('.close').addEventListener('click', closeModal);
+        document.getElementById('animalModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('animalModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 初始化页面
+        window.addEventListener('DOMContentLoaded', renderAnimalCards);
+    </script>
+</body>
+</html>
